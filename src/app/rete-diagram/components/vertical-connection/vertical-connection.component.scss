@@ -1,0 +1,16 @@
+@use "sass:math";
+@import "../vars";
+
+svg {
+  overflow: visible;
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke-width: 5px;
+    stroke: rgb(204, 0, 0);
+    pointer-events: auto;
+  }
+}

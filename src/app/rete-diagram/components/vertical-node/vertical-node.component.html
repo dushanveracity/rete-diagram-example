@@ -1,0 +1,56 @@
+<div class="node-container">
+  <!-- Input Sockets -->
+  <div class="input-row">
+    <div
+      class="input"
+      *ngFor="let input of data.inputs | keyvalue : sortByIndex"
+      [attr.data-testid]="'input-' + input.key"
+      style="width: max-content"
+    >
+      <div
+        class="input-socket"
+        refComponent
+        [data]="{
+          type: 'socket',
+          side: 'input',
+          key: input.key,
+          nodeId: data.id,
+          payload: input.value?.socket,
+          seed: seed
+        }"
+        [emit]="emit"
+        data-testid="input-socket"
+      ></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; justify-content: center">
+    <!-- Title -->
+    <div class="title" data-testid="title">{{ data.label }}</div>
+    <img src="{{ data.data['imgUrl'] }}" alt="{{ data.label }}" />
+  </div>
+
+  <!-- Output Sockets -->
+  <div class="output-row">
+    <div
+      class="output"
+      *ngFor="let output of data.outputs | keyvalue : sortByIndex"
+      [attr.data-testid]="'output-' + output.key"
+    >
+      <div
+        class="output-socket"
+        refComponent
+        [data]="{
+          type: 'socket',
+          side: 'output',
+          key: output.key,
+          nodeId: data.id,
+          payload: output.value?.socket,
+          seed: seed
+        }"
+        [emit]="emit"
+        data-testid="output-socket"
+      ></div>
+    </div>
+  </div>
+</div>
