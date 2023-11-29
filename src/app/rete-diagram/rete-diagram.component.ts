@@ -17,7 +17,7 @@ import {
   Transformers,
 } from 'rete-connection-path-plugin';
 import { VerticalNodeComponent } from './components/vertical-node/vertical-node.component';
-import { inverters, combinerBoxes, transformers } from './data/data';
+import { inverterData, combinerBoxData, transformerData } from './data/data';
 import {
   AutoArrangePlugin,
   Presets as ArrangePresets,
@@ -25,15 +25,36 @@ import {
 } from 'rete-auto-arrange-plugin';
 import { VerticalSocketComponent } from './components/vertical-socket/vertical-socket.component';
 import { VerticalConnectionComponent } from './components/vertical-connection/vertical-connection.component';
+import { BaseSocketPosition, getDOMSocketPosition } from 'rete-render-utils';
 
 class Node extends ClassicPreset.Node {
   width = 180;
   height = 80;
-  data: { imgUrl: string, type: string } = { imgUrl: '', type: '' };
+  data: { imgUrl: string; type: string } = { imgUrl: '', type: '' };
 }
 class Connection<N extends Node> extends ClassicPreset.Connection<N, N> {}
 type Schemes = GetSchemes<Node, Connection<Node>>;
 type AreaExtra = AngularArea2D<Schemes>;
+
+type Position = { x: number; y: number };
+type Side = 'input' | 'output';
+class ComputedSocketPosition<S extends Schemes, K> extends BaseSocketPosition<
+  S,
+  K
+> {
+  async calculatePosition(
+    nodeId: string,
+    side: Side,
+    key: string
+  ): Promise<Position | null> {
+    if (!this.area) return null;
+    console.log(nodeId, side, key);
+    return {
+      x: 100,
+      y: 10,
+    };
+  }
+}
 
 @Component({
   selector: 'app-rete-diagram',
@@ -62,22 +83,17 @@ export class ReteDiagramComponent implements AfterViewInit {
     arrow: () => true,
   });
   arrange = new AutoArrangePlugin<Schemes>();
-  applier = new ArrangeAppliers.TransitionApplier<Schemes, never>({
-    duration: 200,
-    timingFunction: (t) => t,
-    async onTick() {
-      // await AreaExtensions.zoomAt(this.area, this.editor.getNodes());
-    },
-  });
+
+
   deviceList = {
-    inverters: inverters,
-    combinerboxes: combinerBoxes,
-    transformers: transformers,
+    inverters: inverterData,
+    combinerboxes: combinerBoxData,
+    transformers: transformerData,
   };
   selected = {
-    inverter: inverters[0],
-    combinerbox: combinerBoxes[0],
-    transformer: transformers[0],
+    inverter: inverterData[0],
+    combinerbox: combinerBoxData[0],
+    transformer: transformerData[0],
   };
 
   async ngAfterViewInit(): Promise<void> {
@@ -111,6 +127,15 @@ export class ReteDiagramComponent implements AfterViewInit {
             return VerticalConnectionComponent;
           },
         },
+        socketPositionWatcher: getDOMSocketPosition({
+          offset({ x, y }, nodeId, side, key) {
+            console.log(x,y)
+            return {
+              x: x,
+              y: y,
+            };
+          },
+        }),
       })
     );
 
@@ -168,7 +193,10 @@ export class ReteDiagramComponent implements AfterViewInit {
   async addInverter() {
     const inverter = this.selected.inverter;
     const inverterNode = new Node(inverter.name);
-    inverterNode.data = { imgUrl: 'assets/images/inverter.png', type: 'inverter' };
+    inverterNode.data = {
+      imgUrl: 'assets/images/inverter.png',
+      type: 'inverter',
+    };
 
     inverter.outputs.forEach((output) => {
       inverterNode.addOutput(
@@ -191,7 +219,10 @@ export class ReteDiagramComponent implements AfterViewInit {
   async addCombinerBox() {
     const combinerbox = this.selected.combinerbox;
     const combinerboxNode = new Node(combinerbox.name);
-    combinerboxNode.data = { imgUrl: 'assets/images/combinerbox.png', type: 'combinerbox' };
+    combinerboxNode.data = {
+      imgUrl: 'assets/images/combinerbox.png',
+      type: 'combinerbox',
+    };
 
     combinerbox.outputs.forEach((output) => {
       combinerboxNode.addOutput(
@@ -215,7 +246,10 @@ export class ReteDiagramComponent implements AfterViewInit {
   async addTransformer() {
     const transformer = this.selected.transformer;
     const transformerNode = new Node(transformer.name);
-    transformerNode.data = { imgUrl: 'assets/images/transformer.png', type: 'transformer' };
+    transformerNode.data = {
+      imgUrl: 'assets/images/transformer.png',
+      type: 'transformer',
+    };
 
     transformer.outputs.forEach((output) => {
       transformerNode.addOutput(
@@ -223,7 +257,6 @@ export class ReteDiagramComponent implements AfterViewInit {
         new ClassicPreset.Output(this.socket)
       );
     });
-
     transformer.inputs.forEach((input) => {
       transformerNode.addInput(
         input.name,
@@ -233,7 +266,43 @@ export class ReteDiagramComponent implements AfterViewInit {
 
     await this.editor.addNode(transformerNode);
 
-    await this.area?.translate(transformerNode.id, { x: 0, y: 350 });
+    const nodes = this.editor.getNodes();
+    const transformers = nodes.filter(
+      (node) => node.data.type === 'transformer'
+    );
+
+    if (transformers.length < 2) {
+      await this.area?.translate(transformerNode.id, { x: 0, y: 350 });
+      return;
+    }
+
+    if (transformers.length % 2 === 0) {
+      const right = transformers.slice(0, transformers.length / 2);
+      const left = transformers.slice(transformers.length / 2);
+
+      for (let i = 0; i < left.length; i++) {
+        console.log('even left loop', i);
+        await this.area?.translate(left[i].id, { x: -200 * (i + 1), y: 350 });
+      }
+      for (let i = 0; i < right.length; i++) {
+        console.log('even right loop', i);
+        await this.area?.translate(right[i].id, { x: 200 * (i + 1), y: 350 });
+      }
+    } else {
+      const centerNodeIdx = Math.round(transformers.length / 2 - 1);
+      const centerNode = transformers[centerNodeIdx];
+      await this.area?.translate(centerNode.id, { x: 0, y: 350 });
+
+      const left = transformers.slice(0, centerNodeIdx);
+      const right = transformers.slice(centerNodeIdx + 1);
+
+      for (let i = 0; i < left.length; i++) {
+        await this.area?.translate(left[i].id, { x: -350 * (i + 1), y: 350 });
+      }
+      for (let i = 0; i < right.length; i++) {
+        await this.area?.translate(right[i].id, { x: 350 * (i + 1), y: 350 });
+      }
+    }
 
     // await this.arrange.layout({ applier: this.applier });
   }
@@ -242,6 +311,9 @@ export class ReteDiagramComponent implements AfterViewInit {
     const nodes = this.editor.getNodes();
 
     console.log(nodes);
+    await this.arrange.layout();
+    
+    console.log('arranging')
 
     // const strings = nodes.
   }

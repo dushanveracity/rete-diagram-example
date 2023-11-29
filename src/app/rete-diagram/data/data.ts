@@ -1,4 +1,4 @@
-export const inverters = [
+export const inverterData = [
   {
     id: 1,
     inputs: [
@@ -45,7 +45,7 @@ export const inverters = [
   },
 ];
 
-export const combinerBoxes = [
+export const combinerBoxData = [
   {
     id: 1,
     inputs: [
@@ -83,7 +83,11 @@ export const combinerBoxes = [
       },
       {
         id: 3,
-        name: 'Input ',
+        name: 'Input 3',
+      },
+      {
+        id: 4,
+        name: 'Input 4',
       },
     ],
     outputs: [
@@ -96,7 +100,7 @@ export const combinerBoxes = [
   },
 ];
 
-export const transformers = [
+export const transformerData = [
   {
     id: 1,
     inputs: [
