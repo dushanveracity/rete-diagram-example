@@ -29,9 +29,10 @@ import { BaseSocketPosition, getDOMSocketPosition } from 'rete-render-utils';
 
 class Node extends ClassicPreset.Node {
   width = 180;
-  height = 80;
+  height = 222;
   data: { imgUrl: string; type: string } = { imgUrl: '', type: '' };
 }
+class Socket extends ClassicPreset.Socket {}
 class Connection<N extends Node> extends ClassicPreset.Connection<N, N> {}
 type Schemes = GetSchemes<Node, Connection<Node>>;
 type AreaExtra = AngularArea2D<Schemes>;
@@ -84,7 +85,6 @@ export class ReteDiagramComponent implements AfterViewInit {
   });
   arrange = new AutoArrangePlugin<Schemes>();
 
-
   deviceList = {
     inverters: inverterData,
     combinerboxes: combinerBoxData,
@@ -129,7 +129,7 @@ export class ReteDiagramComponent implements AfterViewInit {
         },
         socketPositionWatcher: getDOMSocketPosition({
           offset({ x, y }, nodeId, side, key) {
-            console.log(x,y)
+            console.log(x, y);
             return {
               x: x,
               y: y,
@@ -254,7 +254,7 @@ export class ReteDiagramComponent implements AfterViewInit {
     transformer.outputs.forEach((output) => {
       transformerNode.addOutput(
         output.name,
-        new ClassicPreset.Output(this.socket)
+        new ClassicPreset.Output(new Socket('xxx'))
       );
     });
     transformer.inputs.forEach((input) => {
@@ -311,9 +311,15 @@ export class ReteDiagramComponent implements AfterViewInit {
     const nodes = this.editor.getNodes();
 
     console.log(nodes);
-    await this.arrange.layout();
-    
-    console.log('arranging')
+    await this.arrange.layout({
+      options: {
+        'org.eclipse.elk.direction': 'DOWN',
+        'elk.spacing.nodeNode': '100',
+        'elk.layered.spacing.nodeNodeBetweenLayers': '150',
+      },
+    });
+
+    console.log('arranging');
 
     // const strings = nodes.
   }

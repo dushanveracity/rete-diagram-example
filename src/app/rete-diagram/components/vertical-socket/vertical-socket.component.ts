@@ -3,18 +3,18 @@ import {
   Input,
   HostBinding,
   ChangeDetectorRef,
-  OnChanges
-} from "@angular/core";
+  OnChanges,
+} from '@angular/core';
 
 @Component({
-  template: ``,
-  styleUrls: ["./vertical-socket.component.scss"]
+  templateUrl: './vertical-socket.component.html',
+  styleUrls: ['./vertical-socket.component.scss'],
 })
 export class VerticalSocketComponent implements OnChanges {
   @Input() data!: any;
   @Input() rendered!: any;
 
-  @HostBinding("title") get title() {
+  @HostBinding('title') get title() {
     return this.data.name;
   }
 
@@ -25,5 +25,9 @@ export class VerticalSocketComponent implements OnChanges {
   ngOnChanges(): void {
     this.cdr.detectChanges();
     requestAnimationFrame(() => this.rendered());
+  }
+
+  ngOnInit(): void {
+    console.log(this.data);
   }
 }
