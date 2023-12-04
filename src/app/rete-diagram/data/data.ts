@@ -18,6 +18,9 @@ export const inverterData = [
       },
     ],
     name: 'Inverter 1',
+    type: 'inverter',
+    imgUrl: 'assets/images/inverter.png',
+    layer: -350,
   },
   {
     id: 2,
@@ -42,6 +45,9 @@ export const inverterData = [
       },
     ],
     name: 'Inverter 2',
+    type: 'inverter',
+    imgUrl: 'assets/images/inverter.png',
+    layer: -350,
   },
 ];
 
@@ -69,6 +75,9 @@ export const combinerBoxData = [
       },
     ],
     name: 'Combiner Box 1',
+    type: 'combinerbox',
+    imgUrl: 'assets/images/combinerbox.png',
+    layer: 0,
   },
   {
     id: 1,
@@ -96,7 +105,10 @@ export const combinerBoxData = [
         name: 'Output 1',
       },
     ],
-    name: 'COmbiner Box 2',
+    name: 'Combiner Box 2',
+    type: 'combinerbox',
+    imgUrl: 'assets/images/combinerbox.png',
+    layer: 0,
   },
 ];
 
@@ -124,5 +136,8 @@ export const transformerData = [
       },
     ],
     name: 'Transformer 1',
+    type: 'transformer',
+    imgUrl: 'assets/images/transformer.png',
+    layer: 350,
   },
 ];

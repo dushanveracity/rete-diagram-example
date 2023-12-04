@@ -26,8 +26,4 @@ export class VerticalSocketComponent implements OnChanges {
     this.cdr.detectChanges();
     requestAnimationFrame(() => this.rendered());
   }
-
-  ngOnInit(): void {
-    console.log(this.data);
-  }
 }

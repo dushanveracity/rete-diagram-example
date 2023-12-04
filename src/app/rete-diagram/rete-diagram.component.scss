@@ -1,0 +1,38 @@
+.rete {
+  width: 90vw;
+  height: 96vh;
+}
+.button-container {
+  height: 96vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.device-select {
+  padding: 3px 2px;
+  font-weight: bold;
+}
+.device-button {
+  background: white;
+  padding: 3px;
+  font-weight: bold;
+  &:hover {
+    background: rgb(102, 158, 241);
+  }
+}
+.device-select-container {
+  margin: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.arrange-button {
+  padding: 5px;
+  font-weight: bold;
+  background: white;
+  margin: 4px;
+  width: 200px;
+  border-radius: 5px;
+  &:hover {
+    background: rgb(102, 241, 144);
+  }
+}

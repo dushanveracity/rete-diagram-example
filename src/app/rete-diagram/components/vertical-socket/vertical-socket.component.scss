@@ -11,6 +11,7 @@
   background: #fff;
   z-index: 2;
   box-sizing: border-box;
+  border-radius: 4px;
   &:hover {
     background: #ddd;
     .socket-label {
@@ -20,10 +21,11 @@
 
   .socket-label {
     display: none;
-    background-color: rgb(56, 143, 201);
+    background-color: rgb(126, 192, 236);
     text-align: center;
     border-radius: 4px;
-    padding: 3px;
+    padding: 3px 10px;
     width: max-content;
+    font-weight: bold;
   }
 }

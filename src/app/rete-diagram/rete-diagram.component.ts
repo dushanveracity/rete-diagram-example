@@ -57,17 +57,20 @@ class ComputedSocketPosition<S extends Schemes, K> extends BaseSocketPosition<
   }
 }
 
+type NodeData = {
+  id: number;
+  name: string;
+  type: string;
+  imgUrl: string;
+  inputs: { id: number; name: string }[];
+  outputs: { id: number; name: string }[];
+  layer: number;
+};
+
 @Component({
   selector: 'app-rete-diagram',
   templateUrl: './rete-diagram.component.html',
-  styles: [
-    `
-      .rete {
-        width: 100vw;
-        height: 100vh;
-      }
-    `,
-  ],
+  styleUrls: ['./rete-diagram.component.scss'],
 })
 export class ReteDiagramComponent implements AfterViewInit {
   constructor(private injector: Injector) {}
@@ -129,7 +132,6 @@ export class ReteDiagramComponent implements AfterViewInit {
         },
         socketPositionWatcher: getDOMSocketPosition({
           offset({ x, y }, nodeId, side, key) {
-            console.log(x, y);
             return {
               x: x,
               y: y,
@@ -152,26 +154,7 @@ export class ReteDiagramComponent implements AfterViewInit {
 
     AreaExtensions.simpleNodesOrder(this.area);
 
-    // const a = new ClassicPreset.Node('Solar Panel');
-    // a.addOutput('b', new ClassicPreset.Output(this.socket));
-    // a.addOutput('a', new ClassicPreset.Output(this.socket));
-    // await this.editor.addNode(a);
-
-    // const b = new ClassicPreset.Node('Inverter');
-    // b.addInput('c', new ClassicPreset.Input(this.socket));
-    // b.addInput('d', new ClassicPreset.Input(this.socket));
-    // b.addInput('b', new ClassicPreset.Input(this.socket));
-    // b.addOutput('a', new ClassicPreset.Output(this.socket));
-    // await this.editor.addNode(b);
-
-    // await this.area.translate(b.id, { x: 320, y: 0 });
-
-    // await this.editor.addConnection(
-    //   new ClassicPreset.Connection(a, 'a', b, 'b')
-    // );
-
     AreaExtensions.zoomAt(this.area, this.editor.getNodes());
-    // return () => area.destroy();
 
     this.editor.addPipe((context) => {
       if (context.type === 'connectioncreate') {
@@ -186,140 +169,132 @@ export class ReteDiagramComponent implements AfterViewInit {
     deviceData: any,
     type: 'inverter' | 'combinerbox' | 'transformer'
   ) {
-    console.log(deviceData);
     this.selected[type] = deviceData;
   }
 
-  async addInverter() {
-    const inverter = this.selected.inverter;
-    const inverterNode = new Node(inverter.name);
-    inverterNode.data = {
-      imgUrl: 'assets/images/inverter.png',
-      type: 'inverter',
-    };
+  async addNode(node: NodeData) {
+    const newNode = new Node(node.name);
+    newNode.data = { imgUrl: node.imgUrl, type: node.type };
 
-    inverter.outputs.forEach((output) => {
-      inverterNode.addOutput(
+    node.outputs.forEach((output) => {
+      newNode.addOutput(
         output.name,
-        new ClassicPreset.Output(this.socket)
+        new ClassicPreset.Output(new Socket(output.name), undefined, false)
       );
     });
-
-    inverter.inputs.forEach((input) => {
-      inverterNode.addInput(input.name, new ClassicPreset.Input(this.socket));
-    });
-
-    console.log(this.editor);
-
-    await this.editor.addNode(inverterNode);
-
-    await this.area?.translate(inverterNode.id, { x: 0, y: -350 });
-  }
-
-  async addCombinerBox() {
-    const combinerbox = this.selected.combinerbox;
-    const combinerboxNode = new Node(combinerbox.name);
-    combinerboxNode.data = {
-      imgUrl: 'assets/images/combinerbox.png',
-      type: 'combinerbox',
-    };
-
-    combinerbox.outputs.forEach((output) => {
-      combinerboxNode.addOutput(
-        output.name,
-        new ClassicPreset.Output(this.socket)
-      );
-    });
-
-    combinerbox.inputs.forEach((input) => {
-      combinerboxNode.addInput(
+    node.inputs.forEach((input) => {
+      newNode.addInput(
         input.name,
-        new ClassicPreset.Input(this.socket)
+        new ClassicPreset.Input(new Socket(input.name), undefined, true)
       );
     });
 
-    await this.editor.addNode(combinerboxNode);
-
-    await this.area?.translate(combinerboxNode.id, { x: 0, y: 0 });
-  }
-
-  async addTransformer() {
-    const transformer = this.selected.transformer;
-    const transformerNode = new Node(transformer.name);
-    transformerNode.data = {
-      imgUrl: 'assets/images/transformer.png',
-      type: 'transformer',
-    };
-
-    transformer.outputs.forEach((output) => {
-      transformerNode.addOutput(
-        output.name,
-        new ClassicPreset.Output(new Socket('xxx'))
-      );
-    });
-    transformer.inputs.forEach((input) => {
-      transformerNode.addInput(
-        input.name,
-        new ClassicPreset.Input(this.socket)
-      );
-    });
-
-    await this.editor.addNode(transformerNode);
+    await this.editor.addNode(newNode);
 
     const nodes = this.editor.getNodes();
-    const transformers = nodes.filter(
-      (node) => node.data.type === 'transformer'
-    );
+    const nodeLayer = nodes.filter((_node) => _node.data.type === node.type);
 
-    if (transformers.length < 2) {
-      await this.area?.translate(transformerNode.id, { x: 0, y: 350 });
+    if (nodeLayer.length < 2) {
+      await this.area?.translate(newNode.id, { x: 0, y: node.layer });
       return;
     }
 
-    if (transformers.length % 2 === 0) {
-      const right = transformers.slice(0, transformers.length / 2);
-      const left = transformers.slice(transformers.length / 2);
+    if (nodeLayer.length % 2 === 0) {
+      const right = nodeLayer.slice(0, nodeLayer.length / 2);
+      const left = nodeLayer.slice(nodeLayer.length / 2);
 
       for (let i = 0; i < left.length; i++) {
-        console.log('even left loop', i);
-        await this.area?.translate(left[i].id, { x: -200 * (i + 1), y: 350 });
+        if (i + 1 === left.length) {
+          await this.area?.translate(left[i].id, {
+            x: -140,
+            y: node.layer,
+          });
+        } else {
+          await this.area?.translate(left[i].id, {
+            x: -220 * (i + 2),
+            y: node.layer,
+          });
+        }
       }
       for (let i = 0; i < right.length; i++) {
-        console.log('even right loop', i);
-        await this.area?.translate(right[i].id, { x: 200 * (i + 1), y: 350 });
+        if (i + 1 === 1) {
+          await this.area?.translate(right[i].id, {
+            x: 140,
+            y: node.layer,
+          });
+        } else {
+          await this.area?.translate(right[i].id, {
+            x: 220 * (i + 1),
+            y: node.layer,
+          });
+        }
       }
     } else {
-      const centerNodeIdx = Math.round(transformers.length / 2 - 1);
-      const centerNode = transformers[centerNodeIdx];
-      await this.area?.translate(centerNode.id, { x: 0, y: 350 });
+      const centerNodeIdx = Math.round(nodeLayer.length / 2 - 1);
+      const centerNode = nodeLayer[centerNodeIdx];
+      await this.area?.translate(centerNode.id, { x: 0, y: node.layer });
 
-      const left = transformers.slice(0, centerNodeIdx);
-      const right = transformers.slice(centerNodeIdx + 1);
+      const left = nodeLayer.slice(0, centerNodeIdx);
+      const right = nodeLayer.slice(centerNodeIdx + 1);
 
       for (let i = 0; i < left.length; i++) {
-        await this.area?.translate(left[i].id, { x: -350 * (i + 1), y: 350 });
+        await this.area?.translate(left[i].id, {
+          x: -350 * (i + 1),
+          y: node.layer,
+        });
       }
       for (let i = 0; i < right.length; i++) {
-        await this.area?.translate(right[i].id, { x: 350 * (i + 1), y: 350 });
+        await this.area?.translate(right[i].id, {
+          x: 350 * (i + 1),
+          y: node.layer,
+        });
       }
     }
-
-    // await this.arrange.layout({ applier: this.applier });
   }
 
   async arrangeNodes() {
     const nodes = this.editor.getNodes();
 
-    console.log(nodes);
+    const connections = this.editor.getConnections();
+
+    const fixedConnections = connections.filter((connection) => {
+      const source = this.editor.getNode(connection.source);
+      const target = this.editor.getNode(connection.target);
+
+      return !(
+        ['transformer', 'combinerbox'].includes(source.data.type) &&
+        ['transformer', 'combinerbox'].includes(target.data.type)
+      );
+    });
+
+    console.log('fixed connections: ', fixedConnections);
+
+    await Promise.all(
+      fixedConnections.map(async (connection) => {
+        await this.editor.removeConnection(connection.id);
+      })
+    );
+
+    const commonItems = nodes.filter(
+      (node) =>
+        node.data.type === 'transformer' || node.data.type === 'combinerbox'
+    );
+
+    console.log('common items: ', commonItems);
+
     await this.arrange.layout({
       options: {
         'org.eclipse.elk.direction': 'DOWN',
-        'elk.spacing.nodeNode': '100',
         'elk.layered.spacing.nodeNodeBetweenLayers': '150',
       },
+      nodes: commonItems,
     });
 
-    console.log('arranging');
+    await Promise.all(
+      fixedConnections.map(async (connection) => {
+        await this.editor.addConnection(connection);
+      })
+    );
 
     // const strings = nodes.
   }

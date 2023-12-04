@@ -1,52 +1,76 @@
-<div style="display: flex;">
-  <div style="width: 70%; border: 1px solid black; display: flex; flex-direction: column;" class="rete" #rete></div>
-  <div>
-    <div style="display: flex; flex-direction: column">
-      <select
-        [(ngModel)]="selected.inverter"
-        (change)="changeSelectedDevice(selected.inverter, 'inverter')"
-      >
-        <option
-          *ngFor="let inverter of deviceList.inverters"
-          [ngValue]="inverter"
+<div style="display: flex">
+  <div
+    style="
+      width: 80%;
+      border: 1px solid black;
+      display: flex;
+      flex-direction: column;
+    "
+    class="rete"
+    #rete
+  ></div>
+  <div class="button-container">
+    <div>
+      <div class="device-select-container">
+        <select
+          class="device-select"
+          [(ngModel)]="selected.inverter"
+          (change)="changeSelectedDevice(selected.inverter, 'inverter')"
         >
-          {{ inverter.name }}
-        </option>
-      </select>
-      <button (click)="addInverter()">Add Inverter</button>
-    </div>
-    <div style="display: flex; flex-direction: column">
-      <select
-        [(ngModel)]="selected.combinerbox"
-        (change)="changeSelectedDevice(selected.combinerbox, 'combinerbox')"
-      >
-        <option
-          *ngFor="let combinerbox of deviceList.combinerboxes"
-          [ngValue]="combinerbox"
+          <option
+            *ngFor="let inverter of deviceList.inverters"
+            [ngValue]="inverter"
+          >
+            {{ inverter.name }}
+          </option>
+        </select>
+        <button class="device-button" (click)="addNode(this.selected.inverter)">
+          Add Inverter
+        </button>
+      </div>
+      <div class="device-select-container">
+        <select
+          class="device-select"
+          [(ngModel)]="selected.combinerbox"
+          (change)="changeSelectedDevice(selected.combinerbox, 'combinerbox')"
         >
-          {{ combinerbox.name }}
-        </option>
-      </select>
-      <button (click)="addCombinerBox()">Add Combiner Box</button>
-    </div>
-    <div style="display: flex; flex-direction: column">
-      <select
-        [(ngModel)]="selected.transformer"
-        (change)="changeSelectedDevice(selected.transformer, 'transformer')"
-      >
-        <option
-          *ngFor="let transformer of deviceList.transformers"
-          [ngValue]="transformer"
+          <option
+            *ngFor="let combinerbox of deviceList.combinerboxes"
+            [ngValue]="combinerbox"
+          >
+            {{ combinerbox.name }}
+          </option>
+        </select>
+        <button
+          class="device-button"
+          (click)="addNode(this.selected.combinerbox)"
         >
-          {{ transformer.name }}
-        </option>
-      </select>
-      <button (click)="addTransformer()">Add Transformer</button>
+          Add Combiner Box
+        </button>
+      </div>
+      <div class="device-select-container">
+        <select
+          class="device-select"
+          [(ngModel)]="selected.transformer"
+          (change)="changeSelectedDevice(selected.transformer, 'transformer')"
+        >
+          <option
+            *ngFor="let transformer of deviceList.transformers"
+            [ngValue]="transformer"
+          >
+            {{ transformer.name }}
+          </option>
+        </select>
+        <button
+          class="device-button"
+          (click)="addNode(this.selected.transformer)"
+        >
+          Add Transformer
+        </button>
+      </div>
     </div>
-  </div>
-  <div>
-    <button (click)="arrangeNodes()">
-      Arrange
-    </button>
+    <div>
+      <button class="arrange-button" (click)="arrangeNodes()">Arrange</button>
+    </div>
   </div>
 </div>
