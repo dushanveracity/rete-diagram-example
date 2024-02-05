@@ -141,3 +141,76 @@ export const transformerData = [
     layer: 350,
   },
 ];
+
+export const response = {
+  strings: [
+    {
+      id: 1,
+    },
+    {
+      id: 2,
+    },
+    ,
+    {
+      id: 3,
+    },
+  ],
+  inverters: [
+    {
+      id: 1,
+      noOfTackerConfig: 3,
+      inverteTrackerConfigs: [
+        {
+          inputA: [1],
+          inputB: [2, 3],
+        },
+      ],
+    },
+  ],
+  common: [
+    {
+      id: 10,
+      name: 'combinerBox',
+      noOfInput: 6,
+      noOfOutPut: 2,
+      input: [
+        {
+          type: 'inverter',
+          output: 'index 1',
+          id: 1,
+        },
+        {
+          type: 'inverter',
+          output: 'index 2',
+          id: 2,
+        },
+      ],
+    },
+    {
+      id: 100,
+      name: 'Transfomer',
+      noOfInput: 4,
+      noOfOutPut: 2,
+      input: [
+        {
+          type: 'combinerBox',
+          output: 'index 1',
+          id: 10,
+        },
+      ],
+    },
+    {
+      id: 101,
+      name: 'Transfomer',
+      noOfInput: 4,
+      noOfOutPut: 2,
+      input: [
+        {
+          type: 'combinerBox',
+          output: 'index 1',
+          id: 10,
+        },
+      ],
+    },
+  ],
+};

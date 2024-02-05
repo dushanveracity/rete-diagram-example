@@ -26,6 +26,7 @@ import {
 import { VerticalSocketComponent } from './components/vertical-socket/vertical-socket.component';
 import { VerticalConnectionComponent } from './components/vertical-connection/vertical-connection.component';
 import { BaseSocketPosition, getDOMSocketPosition } from 'rete-render-utils';
+import { response as sampleData } from './data/data';
 
 class Node extends ClassicPreset.Node {
   width = 180;
@@ -58,7 +59,7 @@ class ComputedSocketPosition<S extends Schemes, K> extends BaseSocketPosition<
 }
 
 type NodeData = {
-  id: number;
+  id: string | number | undefined;
   name: string;
   type: string;
   imgUrl: string;
@@ -103,7 +104,7 @@ export class ReteDiagramComponent implements AfterViewInit {
     const pathPlugin = new ConnectionPathPlugin<Schemes, Area2D<Schemes>>({
       // curve: (c: any) => c.curve, // curveLinear
       transformer: () =>
-        Transformers.classic({ vertical: true, curvature: 0.4 }),
+        Transformers.classic({ vertical: true, curvature: 0.2 }),
       arrow: () => true,
     });
     this.area = new AreaPlugin<Schemes, AreaExtra>(
@@ -149,12 +150,84 @@ export class ReteDiagramComponent implements AfterViewInit {
 
     this.arrange.addPreset(ArrangePresets.classic.setup());
 
+    await Promise.all(
+      sampleData.strings.map(async (string) => {
+        const stringNode = await this.addNode({
+          id: string?.id,
+          imgUrl: '',
+          inputs: [],
+          outputs: [{ id: 1, name: 'output1' }],
+          name: 'string',
+          type: 'string',
+          layer: -350,
+        });
+        console.log(stringNode);
+      })
+    );
+
+    await Promise.all(
+      sampleData.inverters.map(async (inverter) => {
+        // const usedInputs = inverter.inverteTrackerConfigs.map(
+        //   (tracker, idx) => {
+        //     const inputs = Object.entries(tracker);
+
+        //     return {
+        //       id: idx + 1,
+        //       name: 'tracker' + (idx + 1),
+        //       inputs: inputs.map((input, idx) => ({
+        //         name: input[0],
+        //         strings: input[1],
+        //       })),
+        //     };
+        //   }
+        // ) as any;
+
+        // console.log(usedInputs);
+
+        // const emptyInputs = Array.from(
+        //   { length: inverter?.noOfTackerConfig },
+        //   (_, index) => ({
+        //     id: index + inverter.inverteTrackerConfigs.length + 1,
+        //     name:
+        //       'tracker' + (index + inverter.inverteTrackerConfigs.length + 1),
+        //   })
+        // );
+
+        const addedInverter = await this.addNode({
+          id: 111, // String(inverter?.id) + 'str' + inverter?.id,
+          imgUrl: '',
+          inputs: [],
+          outputs: [],
+          name: 'inverter' + inverter?.id,
+          type: 'inverter',
+          layer: 0,
+        });
+
+        console.log('added inverter', addedInverter);
+
+        // usedInputs.forEach((tracker: any) => {
+        //   tracker.inputs.forEach((input: any) => {
+        //     input.strings.map((stringId: any) => {
+        //       const sourceString = this.editor.getNode(String(stringId));
+        //       this.editor.addConnection({
+        //         id: String(input.name) + String(inverter?.id),
+        //         target: String(inverter?.id),
+        //         source: stringId,
+        //         targetInput: 'xx',
+        //         sourceOutput: 'xx',
+        //       });
+        //     });
+        //   });
+        // });
+      })
+    );
+
     // @ts-ignore
     this.area.use(this.arrange);
 
-    AreaExtensions.simpleNodesOrder(this.area);
-
     AreaExtensions.zoomAt(this.area, this.editor.getNodes());
+
+    AreaExtensions.simpleNodesOrder(this.area);
 
     this.editor.addPipe((context) => {
       if (context.type === 'connectioncreate') {
@@ -250,12 +323,19 @@ export class ReteDiagramComponent implements AfterViewInit {
         });
       }
     }
+
+    console.log(newNode);
+
+    return newNode;
   }
 
   async arrangeNodes() {
     const nodes = this.editor.getNodes();
+    console.log(nodes);
 
     const connections = this.editor.getConnections();
+
+    console.log(connections);
 
     const fixedConnections = connections.filter((connection) => {
       const source = this.editor.getNode(connection.source);
@@ -267,35 +347,25 @@ export class ReteDiagramComponent implements AfterViewInit {
       );
     });
 
-    console.log('fixed connections: ', fixedConnections);
-
-    await Promise.all(
-      fixedConnections.map(async (connection) => {
-        await this.editor.removeConnection(connection.id);
-      })
-    );
-
     const commonItems = nodes.filter(
       (node) =>
         node.data.type === 'transformer' || node.data.type === 'combinerbox'
     );
-
-    console.log('common items: ', commonItems);
 
     await this.arrange.layout({
       options: {
         'org.eclipse.elk.direction': 'DOWN',
         'elk.layered.spacing.nodeNodeBetweenLayers': '150',
       },
-      nodes: commonItems,
+      // nodes: commonItems,
     });
 
-    await Promise.all(
-      fixedConnections.map(async (connection) => {
-        await this.editor.addConnection(connection);
-      })
-    );
+    this.area && AreaExtensions.zoomAt(this.area, this.editor.getNodes());
 
-    // const strings = nodes.
+    // await Promise.all(
+    //   fixedConnections.map(async (connection) => {
+    //     await this.editor.addConnection(connection);
+    //   })
+    // );
   }
 }

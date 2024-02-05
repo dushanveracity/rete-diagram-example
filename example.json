@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "outputs": [
+      {
+        "id": 1,
+        "name": "Output 1",
+        "childId": 1,
+        "childInputId": 1
+      },
+      {
+        "id": 2,
+        "name": "Output 2",
+        "childId": 1,
+        "childInputId": 2
+      }
+    ],
+    "name": "String 1",
+    "type": "string",
+    "imgUrl": "images/string.png"
+  },
+  {
+    "id": 1,
+    "inputs": [
+      {
+        "id": 1,
+        "name": "Input 1",
+        "tagCount": 2
+      },
+      {
+        "id": 2,
+        "name": "Input 2",
+        "tagCount": 3
+      },
+      {
+        "id": 3,
+        "name": "Input 3",
+        "tagCount": 2
+      }
+    ],
+    "outputs": [
+      {
+        "id": 1,
+        "name": "Output 1",
+        "childId": 1,
+        "childInputId": 1
+      }
+    ],
+    "name": "Inverter 1",
+    "type": "inverter",
+    "imgUrl": "images/inverter.png"
+  }
+]
